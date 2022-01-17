@@ -1,0 +1,29 @@
+{% extends "auctions/layout.html" %}
+
+{% block title %}Auction Detail{% endblock %}
+
+{% block body %}
+    <div class="auction-detail">
+        <h2>Listing: {{ auction.title|capfirst }}</h2>
+        {% comment %} WatchList button {% endcomment %}
+        {% if user.is_authenticated  and user.id != auction.created_by.id %}
+            {% if is_watch_list %}
+                <button>Remove From Watchlist</button>
+            {% else %}
+                <button>Remove From Watchlist</button>
+            {% endif %}
+        {% endif %}
+
+        <img src="{{ auction.image.url }}">
+        <p>{{ auction.description }}</p>
+
+        <div class="bid-section">
+            <p><strong>${{ auction.start_price }}</strong></p>
+            <p>({{ total_bid }}) bids so far.</p>
+        </div>
+        <p>{{ auction.date|date:"M d, Y"}}</p>
+        <p>{{ auction.categories }}</p>
+        <p>{{ auction.active }}</p>
+    </div>
+    
+{% endblock %}

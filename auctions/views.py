@@ -1,10 +1,16 @@
+from urllib import request
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
+from django.views.generic.edit import CreateView, FormView
+from django.views.generic import ListView, DetailView
 from django.shortcuts import render
 from django.urls import reverse
+from django.contrib.auth.mixins import LoginRequiredMixin
 
-from .models import User
+
+from .forms import AuctionForm
+from .models import Auction, User
 
 
 def index(request):
@@ -61,3 +67,30 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "auctions/register.html")
+
+
+class CreateListingView(LoginRequiredMixin, CreateView):
+    form_class = AuctionForm
+    template_name = "auctions/create-listing.html"
+    
+    def form_valid(self, form):
+        form.instance.created_by = self.request.user
+        return super().form_valid(form)
+
+
+class AuctionDetailView(DetailView):
+    template_name = "auctions/detail-auction.html"
+    model = Auction
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        request = self.request
+        auction = self.object
+        print(auction.bids.count())
+        context["total_bid"] = auction.bids.count()
+        try:
+            watch_list_id = request.session["watch_list"]
+            context["is_watch_list"] = watch_list_id == str(auction.id)
+        except KeyError:
+            pass
+        return context
