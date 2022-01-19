@@ -64,3 +64,5 @@ class Bid(models.Model):
         max_digits=10, decimal_places=2, validators={MinValueValidator: 1.00})
     auction = models.ForeignKey(
         Auction, on_delete=models.CASCADE, related_name="bids")
+    def get_absolute_url(self):
+        return reverse("auction-detail", args=[self.auction.id])

@@ -3,13 +3,13 @@ from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic.edit import CreateView, FormView
-from django.views.generic import ListView, DetailView
-from django.shortcuts import render
+from django.views.generic import ListView, DetailView, View
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 
-from .forms import AuctionForm
+from .forms import AuctionForm, BidForm
 from .models import Auction, User
 
 
@@ -72,25 +72,43 @@ def register(request):
 class CreateListingView(LoginRequiredMixin, CreateView):
     form_class = AuctionForm
     template_name = "auctions/create-listing.html"
-    
+
     def form_valid(self, form):
         form.instance.created_by = self.request.user
         return super().form_valid(form)
 
 
-class AuctionDetailView(DetailView):
+class AuctionDetailView(CreateView):
     template_name = "auctions/detail-auction.html"
-    model = Auction
+    form_class = BidForm
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         request = self.request
-        auction = self.object
-        print(auction.bids.count())
-        context["total_bid"] = auction.bids.count()
+        auction = get_object_or_404(Auction, id=self.kwargs.get("pk"))
+        self.kwargs["auction"] = auction
+        bids = auction.bids.order_by("-price")
+        context["auction"] = auction
+        context["total_bid"] = bids.count()
+        try:
+            context["highest"] = bids.first().price
+        except AttributeError:
+            pass
         try:
             watch_list_id = request.session["watch_list"]
             context["is_watch_list"] = watch_list_id == str(auction.id)
         except KeyError:
             pass
         return context
+
+    def form_valid(self, form, **kwargs):
+        auction_id = self.request.POST.get("auction_id")
+        auction = get_object_or_404(Auction, id=auction_id)
+        highest = auction.bids.order_by("-price").first().price
+        price = float(form.cleaned_data["price"])
+        if price > highest:
+            form.instance.user_name = self.request.user
+            form.instance.auction = auction
+            return super().form_valid(form)
+        return HttpResponseRedirect(reverse("auction-detail", args=[auction_id]))
+

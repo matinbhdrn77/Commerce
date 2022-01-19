@@ -18,11 +18,33 @@
         <p>{{ auction.description }}</p>
 
         <div class="bid-section">
-            <p><strong>${{ auction.start_price }}</strong></p>
+            <p><strong>${% if highest %} {{ highest }} {% else %} {{ auction.start_price }} {% endif %}</strong></p>
             <p>({{ total_bid }}) bids so far.</p>
+
+            <!-- Create Bid Form -->
+            {% if user.is_authenticated and user.id != auction.created_by.id %}
+                <form method="POST" class="">
+                    {% csrf_token %}
+                    <div class="form-group row">
+                        <div class="col-sm-10 col-8">
+                            {{ form }}
+                            {{ form.errors }}
+                        </div>
+                    <input type="submit" value="Place Bid" class="btn btn-primary btn-new-blue">
+                    <input type="hidden" name="auction_id" value="{{ auction.id }}">
+                    </div>
+                </form>
+            {% endif %}
+            {% if message %} <p>{{ message }}</p>{% endif %}
+
         </div>
-        <p>{{ auction.date|date:"M d, Y"}}</p>
-        <p>{{ auction.categories }}</p>
+
+        <h3>Detail:</h3>
+        <ul>
+            <li><p>time: {{ auction.date|date:"M d, Y"}}</p></li>
+            <li><p>category: {{ auction.categories }}</p></li>
+            <li><p>creator: {{ auction.created_by }}</p></li>
+        </ul>
         <p>{{ auction.active }}</p>
     </div>
     
