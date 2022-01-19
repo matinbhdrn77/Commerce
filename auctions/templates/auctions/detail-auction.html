@@ -19,23 +19,39 @@
 
         <div class="bid-section">
             <p><strong>${% if highest %} {{ highest }} {% else %} {{ auction.start_price }} {% endif %}</strong></p>
-            <p>({{ total_bid }}) bids so far.</p>
-
             <!-- Create Bid Form -->
-            {% if user.is_authenticated and user.id != auction.created_by.id %}
-                <form method="POST" class="">
-                    {% csrf_token %}
-                    <div class="form-group row">
-                        <div class="col-sm-10 col-8">
-                            {{ form }}
-                            {{ form.errors }}
+            {% if auction.active %}
+            <p>({{ total_bid }}) bids so far. {% if best_suggest_user.id == user.id %} Your bid is the current bid {% endif %}</p>
+                {% if user.is_authenticated and user.id != auction.created_by.id %}
+                    <form method="POST" class="">
+                        {% csrf_token %}
+                        <div class="form-group row">
+                            <div class="col-sm-10 col-8">
+                                {{ form }}
+                            </div>
+                        <input type="submit" value="Place Bid" class="btn btn-primary btn-new-blue">
+                        <input type="hidden" name="auction_id" value="{{ auction.id }}">
                         </div>
-                    <input type="submit" value="Place Bid" class="btn btn-primary btn-new-blue">
-                    <input type="hidden" name="auction_id" value="{{ auction.id }}">
+                    </form>
+                {% endif %}
+                {% if messages %}
+                    <div class="span12">
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}" role="alert">
+                                {{ message|safe }}
+                            </div>
+                        {% endfor %}
                     </div>
-                </form>
+                {% endif %}
+            {% else %}
+                {% if best_suggest_user.id == user.id %}
+                    <div class="alert alert-success" role="alert">
+                        Congeratulation! You win this auction
+                    </div>
+                {% else %}
+                    <p>This auction is closed!</p>
+                {% endif %}
             {% endif %}
-            {% if message %} <p>{{ message }}</p>{% endif %}
 
         </div>
 
@@ -45,7 +61,10 @@
             <li><p>category: {{ auction.categories }}</p></li>
             <li><p>creator: {{ auction.created_by }}</p></li>
         </ul>
-        <p>{{ auction.active }}</p>
+
+        {% if user.id == auction.created_by.id and auction.active%}
+            <a href="{% url 'close-auction' auction.id %}">Close Auction</a>
+        {% endif %}
     </div>
-    
+
 {% endblock %}

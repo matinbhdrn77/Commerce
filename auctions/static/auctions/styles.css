@@ -83,3 +83,7 @@ button:active{
 .auction-detail img {
     max-height: 15rem;
 }
+
+.alert-error {
+    color: rgb(167, 35, 35);
+}

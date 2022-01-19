@@ -9,4 +9,5 @@ urlpatterns = [
     path("register", views.register, name="register"),
     path("create-listing/", views.CreateListingView.as_view(), name="create-listing"),
     path("auction-detail/<int:pk>", views.AuctionDetailView.as_view(), name="auction-detail"),
+    path("close-auction/<int:pk>", views.CloseAuctionView.as_view(), name="close-auction")
 ]

@@ -1,12 +1,16 @@
+from contextlib import redirect_stderr
 from urllib import request
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
-from django.views.generic.edit import CreateView, FormView
+from django.views.generic.edit import CreateView, FormView, UpdateView
 from django.views.generic import ListView, DetailView, View
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
+
+import auctions
 
 
 from .forms import AuctionForm, BidForm
@@ -91,7 +95,9 @@ class AuctionDetailView(CreateView):
         context["auction"] = auction
         context["total_bid"] = bids.count()
         try:
-            context["highest"] = bids.first().price
+            highest = bids.first()
+            context["highest"] = highest.price
+            context["best_suggest_user"] = highest.user_name
         except AttributeError:
             pass
         try:
@@ -104,11 +110,22 @@ class AuctionDetailView(CreateView):
     def form_valid(self, form, **kwargs):
         auction_id = self.request.POST.get("auction_id")
         auction = get_object_or_404(Auction, id=auction_id)
-        highest = auction.bids.order_by("-price").first().price
+        try:
+            highest = auction.bids.order_by("-price").first().price
+        except:
+            highest = auction.start_price
         price = float(form.cleaned_data["price"])
         if price > highest:
             form.instance.user_name = self.request.user
             form.instance.auction = auction
             return super().form_valid(form)
+        messages.error(self.request, 'Your Suggest must be greater than actual suggest')
         return HttpResponseRedirect(reverse("auction-detail", args=[auction_id]))
 
+
+class CloseAuctionView(View):
+    def get(self, request, pk):
+        auction = get_object_or_404(Auction, id=pk)
+        auction.active = False
+        auction.save()
+        return HttpResponseRedirect(reverse("auction-detail", args=[pk]))
