@@ -17,6 +17,7 @@ class User(AbstractUser):
 
 
 CATEGORY = [
+    ("NONE", "NONE"),
     ("Motors", "Motors"),
     ("Fashion", "Fashion"),
     ("Electronics", "Electronics"),
@@ -26,7 +27,6 @@ CATEGORY = [
     ("Toys", "Toys"),
     ("Business & Industrial", "Business & Industrial"),
     ("Music", "Music"),
-    ("NONE", "NONE")
 ]
 
 

@@ -61,7 +61,7 @@
                 <h4 class="card-title">Details</h4>
                 <ul>
                     <li>Seller: {{auction.created_by}}</li>
-                    <li>Category: {{auction.categories}}</li>
+                    <li>Category: <a href="{% url 'show-category' auction.categories %}">{{auction.categories}}</a></li>
                 </ul>
             </div>
         </div>

@@ -158,4 +158,14 @@ class ShowWatchlistView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         qs = super().get_queryset()
-        return qs.filter(users_watchlist=self.request.user)
+        return qs.filter(users_watchlist=self.request.user).order_by("-date")
+
+
+class ShowCategoriesView(LoginRequiredMixin, ListView):
+    template_name = "auctions/index.html"
+    model = Auction
+    context_object_name = "auctions"
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        return qs.filter(categories=self.kwargs["categories"]).order_by("-date")

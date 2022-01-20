@@ -11,5 +11,6 @@ urlpatterns = [
     path("auction-detail/<int:pk>", views.AuctionDetailView.as_view(), name="auction-detail"),
     path("close-auction/<int:pk>", views.CloseAuctionView.as_view(), name="close-auction"),
     path("watchlist/<int:id>", views.WatchListView.as_view(), name="watchlist"),
-    path("show-watchlist/", views.ShowWatchlistView.as_view(), name="show-watchlist")
+    path("show-watchlist/", views.ShowWatchlistView.as_view(), name="show-watchlist"),
+    path("show-category/<str:categories>", views.ShowCategoriesView.as_view(), name="show-category")
 ]
