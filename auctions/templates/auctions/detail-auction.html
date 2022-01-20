@@ -69,6 +69,38 @@
         {% if user.id == auction.created_by.id and auction.active%}
             <a href="{% url 'close-auction' auction.id %}">Close Auction</a>
         {% endif %}
+
+        <!--Comment-->
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Comments</h4>
+                <p class="card-text">
+                    <div class="comment-section mb-4">
+                        {% for comment in comments %}
+                            <div class="single-comment mb-3">
+                                <div class="comment-text">
+                                    {{ comment.text }}    
+                                </div>
+                                <div class="comment-author">
+                                    ~ {{ comment.user_name }}
+                                </div>
+                        {% empty %}
+                            <div class="no-comment">
+                                No comments yet
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <form action="{% url 'handle_comment' auction.id %}" method="POST">
+                        {% csrf_token %}
+                        <div class="mb-2">
+                            {{ comment_form }}
+                        </div>
+                        <input type="submit" value="Comment" class="btn btn-primary btn-new-blue" style="float: right;">
+                    </form>
+                </p>
+            </div>
+        </div>
+
     </div>
 
 {% endblock %}

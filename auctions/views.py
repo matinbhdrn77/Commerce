@@ -14,7 +14,7 @@ from django.contrib import messages
 import auctions
 
 
-from .forms import AuctionForm, BidForm
+from .forms import AuctionForm, BidForm, CommentForm
 from .models import Auction, User
 
 
@@ -97,6 +97,10 @@ class AuctionDetailView(CreateView):
         context["auction"] = auction
         context["total_bid"] = bids.count()
 
+        # comments for auction
+        comments = auction.comments.all()
+        context["comments"] = comments
+        context["comment_form"] = CommentForm()
         # retrun best suggest
         try:
             highest = bids.first()
@@ -104,7 +108,6 @@ class AuctionDetailView(CreateView):
             context["best_suggest_user"] = highest.user_name
         except AttributeError:
             pass
-
         # Check item is watchlist
         if request.user in auction.users_watchlist.all():
             context["is_watch_list"] =  True
@@ -169,3 +172,18 @@ class ShowCategoriesView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         qs = super().get_queryset()
         return qs.filter(categories=self.kwargs["categories"]).order_by("-date")
+
+
+class HandleCommentView(View):
+    def post(self, request, id):
+        auction = get_object_or_404(Auction, id=id)
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.user_name = request.user
+            comment.auction = auction
+            comment.save()
+        else:
+            messages.error(
+            self.request, 'Your Suggest must be greater than actual suggest')
+        return HttpResponseRedirect(reverse("auction-detail", args=[id]))
