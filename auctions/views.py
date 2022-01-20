@@ -1,10 +1,11 @@
 from contextlib import redirect_stderr
+from operator import mod
 from urllib import request
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic.edit import CreateView, FormView, UpdateView
-from django.views.generic import ListView, DetailView, View
+from django.views.generic import ListView, DetailView, View, TemplateView
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -17,8 +18,10 @@ from .forms import AuctionForm, BidForm
 from .models import Auction, User
 
 
-def index(request):
-    return render(request, "auctions/index.html")
+class IndexView(ListView):
+    template_name = "auctions/index.html"
+    model = Auction
+    context_object_name = "auctions"
 
 
 def login_view(request):
@@ -90,21 +93,24 @@ class AuctionDetailView(CreateView):
         context = super().get_context_data(**kwargs)
         request = self.request
         auction = get_object_or_404(Auction, id=self.kwargs.get("pk"))
-        self.kwargs["auction"] = auction
         bids = auction.bids.order_by("-price")
         context["auction"] = auction
         context["total_bid"] = bids.count()
+
+        # retrun best suggest
         try:
             highest = bids.first()
             context["highest"] = highest.price
             context["best_suggest_user"] = highest.user_name
         except AttributeError:
             pass
-        try:
-            watch_list_id = request.session["watch_list"]
-            context["is_watch_list"] = watch_list_id == str(auction.id)
-        except KeyError:
-            pass
+
+        # Check item is watchlist
+        if request.user in auction.users_watchlist.all():
+            context["is_watch_list"] =  True
+        else:
+            context["is_watch_list"] =  False
+    
         return context
 
     def form_valid(self, form, **kwargs):
@@ -118,14 +124,38 @@ class AuctionDetailView(CreateView):
         if price > highest:
             form.instance.user_name = self.request.user
             form.instance.auction = auction
+            auction.current_price = highest
+            auction.save()
             return super().form_valid(form)
-        messages.error(self.request, 'Your Suggest must be greater than actual suggest')
+        messages.error(
+            self.request, 'Your Suggest must be greater than actual suggest')
         return HttpResponseRedirect(reverse("auction-detail", args=[auction_id]))
 
 
-class CloseAuctionView(View):
+class CloseAuctionView(LoginRequiredMixin, View):
     def get(self, request, pk):
         auction = get_object_or_404(Auction, id=pk)
         auction.active = False
         auction.save()
         return HttpResponseRedirect(reverse("auction-detail", args=[pk]))
+
+
+class WatchListView(LoginRequiredMixin, View):
+    def get(self, request, id):
+        auction = get_object_or_404(Auction, id=id)
+        if request.user in auction.users_watchlist.all():
+            auction.users_watchlist.remove(request.user)
+        else:
+            auction.users_watchlist.add(request.user)
+        auction.save()
+        return HttpResponseRedirect(reverse("auction-detail", args=[id]))
+
+
+class ShowWatchlistView(LoginRequiredMixin, ListView):
+    template_name = "auctions/index.html"
+    model = Auction
+    context_object_name = "auctions"
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        return qs.filter(users_watchlist=self.request.user)

@@ -10,7 +10,7 @@ class UserAdmin(admin.ModelAdmin):
 
 class AuctionAdmin(admin.ModelAdmin):
     """Contains Auction model admin page config"""
-    list_display = ("id", "title", "created_by", "start_price", "active")
+    list_display = ("id", "title", "created_by", "current_price", "active")
 
 
 class BidAdmin(admin.ModelAdmin):

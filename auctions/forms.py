@@ -18,11 +18,11 @@ class CommentForm(forms.ModelForm):
 class AuctionForm(forms.ModelForm):
     class Meta:
         model = Auction
-        exclude = ["created_by", "date", "active"]
+        exclude = ["created_by", "date", "active", "users_watchlist"]
         labels = {
             "title": "Product Name:",
-            "start_price": "Price:",
-            "image": "Product Image",
+            "current_price": "Price:",
+            "image": "Product Image:",
             "categories": "Chosse Categories:",
             "description": "Your Description:"
         }

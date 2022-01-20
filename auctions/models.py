@@ -34,7 +34,7 @@ class Auction(models.Model):
     title = models.CharField(max_length=255)
     created_by = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="auctions")
-    start_price = models.DecimalField(
+    current_price = models.DecimalField(
         max_digits=10, decimal_places=2, validators={MinValueValidator: 1.00})
     description = models.TextField(blank=True)
     date =models.DateTimeField(auto_now_add=True)
@@ -42,6 +42,8 @@ class Auction(models.Model):
     categories = models.CharField(
         max_length=255, choices=CATEGORY, default="NON")
     active = models.BooleanField(default=True)
+    users_watchlist = models.ManyToManyField(
+        User, blank=True, related_name="watchlist")
 
     def get_absolute_url(self):
         return reverse("auction-detail", args=[self.pk])

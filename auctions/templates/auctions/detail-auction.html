@@ -5,20 +5,20 @@
 {% block body %}
     <div class="auction-detail">
         <h2>Listing: {{ auction.title|capfirst }}</h2>
-        {% comment %} WatchList button {% endcomment %}
-        {% if user.is_authenticated  and user.id != auction.created_by.id %}
+        <!-- WatchList button-->
+        {% if user.is_authenticated  and user.id != auction.created_by.id and auction.active %}
             {% if is_watch_list %}
-                <button>Remove From Watchlist</button>
+            <a href="{% url 'watchlist' auction.id %}"><button>Remove From Watchlist</button></a>
             {% else %}
-                <button>Remove From Watchlist</button>
+                <a href="{% url 'watchlist' auction.id %}"><button>Add To Watchlist</button></a>
             {% endif %}
         {% endif %}
 
         <img src="{{ auction.image.url }}">
-        <p>{{ auction.description }}</p>
+        <p>{{ auction.description|linebreaks }}</p>
 
         <div class="bid-section">
-            <p><strong>${% if highest %} {{ highest }} {% else %} {{ auction.start_price }} {% endif %}</strong></p>
+            <p><strong>${% if highest %} {{ highest }} {% else %} {{ auction.current_price }} {% endif %}</strong></p>
             <!-- Create Bid Form -->
             {% if auction.active %}
             <p>({{ total_bid }}) bids so far. {% if best_suggest_user.id == user.id %} Your bid is the current bid {% endif %}</p>
@@ -55,12 +55,16 @@
 
         </div>
 
-        <h3>Detail:</h3>
-        <ul>
-            <li><p>time: {{ auction.date|date:"M d, Y"}}</p></li>
-            <li><p>category: {{ auction.categories }}</p></li>
-            <li><p>creator: {{ auction.created_by }}</p></li>
-        </ul>
+        <!--Detail-->
+        <div class="card mb-3">
+            <div class="card-body">
+                <h4 class="card-title">Details</h4>
+                <ul>
+                    <li>Seller: {{auction.created_by}}</li>
+                    <li>Category: {{auction.categories}}</li>
+                </ul>
+            </div>
+        </div>
 
         {% if user.id == auction.created_by.id and auction.active%}
             <a href="{% url 'close-auction' auction.id %}">Close Auction</a>

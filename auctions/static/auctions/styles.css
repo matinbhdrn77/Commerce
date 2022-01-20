@@ -87,3 +87,39 @@ button:active{
 .alert-error {
     color: rgb(167, 35, 35);
 }
+
+
+/* list Auctions */
+.auction-item {
+    padding: 0;
+    margin-right: 20px;
+    width: 300px;
+}
+
+.auction-item a {
+    color: black;
+}
+
+.auction-item a:hover {
+    color: var(--first-blue-light);
+}
+
+.card-image-wrapper {
+    background-color: var(--white-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    width: 100%;
+}
+
+.listing-img {
+    height: 200px;
+    object-fit: contain;
+}
+
+.auction-list-date {
+    font-size: small;
+    font-style: italic;
+    color: grey;
+}

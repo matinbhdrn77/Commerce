@@ -3,5 +3,9 @@
 {% block body %}
     <h2>Active Listings</h2>
 
-    TODO
+    {% for auction in auctions %}
+        {% include 'auctions/includes/list-auctions.html' %}
+    {% empty %}
+        <p>No Auction!</p>
+    {% endfor %}
 {% endblock %}
