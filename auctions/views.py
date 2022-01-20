@@ -184,6 +184,5 @@ class HandleCommentView(View):
             comment.auction = auction
             comment.save()
         else:
-            messages.error(
-            self.request, 'Your Suggest must be greater than actual suggest')
+            pass
         return HttpResponseRedirect(reverse("auction-detail", args=[id]))
